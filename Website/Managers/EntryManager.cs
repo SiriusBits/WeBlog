@@ -12,12 +12,7 @@ using Sitecore.Search;
 using Sitecore.Modules.WeBlog.Extensions;
 using Sitecore.Modules.WeBlog.Search;
 using Sitecore.Modules.WeBlog.Search.Crawlers;
-
-#if SC62 || SC64
-using Sitecore.Analytics;
-#else
 using Sitecore.Analytics.Data.DataAccess.DataAdapters;
-#endif
 
 namespace Sitecore.Modules.WeBlog.Managers
 {
@@ -346,19 +341,18 @@ namespace Sitecore.Modules.WeBlog.Managers
             
             if (entryIds.Count() > 0)
             {
-#if SC62 || SC64
-                sql = sql.Replace("$page_table$", "page");
-                var ids = AnalyticsManager.ReadMany<ID>(sql, reader =>
-                {
-                    return new ID(AnalyticsManager.GetGuid(0, reader));
-                }, new object[0]);
-#else
+//#if SC62 || SC64
+//                sql = sql.Replace("$page_table$", "page");
+//                var ids = AnalyticsManager.ReadMany<ID>(sql, reader =>
+//                {
+//                    return new ID(AnalyticsManager.GetGuid(0, reader));
+//                }, new object[0]);
+//#else
                 sql = sql.Replace("$page_table$", "pages");
                 var ids = DataAdapterManager.ReportingSql.ReadMany<ID>(sql, reader =>
                 {
                     return new ID(DataAdapterManager.ReportingSql.GetGuid(0, reader));
                 }, new object[0]); 
-#endif
                 var limitedIds = ids.Take(maxCount).ToArray();
                 return (from id in limitedIds select new EntryItem(blogItem.Database.GetItem(id))).ToArray();
             }

@@ -36,6 +36,24 @@ namespace Sitecore.Modules.WeBlog.Layouts
         }
 
         /// <summary>
+        /// Gets or sets the entry index to start binding at.
+        /// </summary>
+        public int Year
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the entry index to start binding at.
+        /// </summary>
+        public int Month
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets the path to the (override) template for posts in the list.
         /// </summary>
         public string PostTemplate
@@ -63,6 +81,27 @@ namespace Sitecore.Modules.WeBlog.Layouts
             int startIndex = 0;
             int.TryParse(startIndexStr, out startIndex);
             StartIndex = startIndex;
+
+            string yearStr = Request.QueryString["year"] ?? "0";
+            int year = 0;
+            int.TryParse(yearStr, out year);
+            Year = year;
+
+            string monthStr = Request.QueryString["monthyear"] ?? "0";
+            if (monthStr != "0")
+            {
+                yearStr = monthStr.Substring(0, 4);
+                monthStr = monthStr.Substring(4, 2);
+
+                if (monthStr[0].ToString() == "0")
+                    monthStr = monthStr.Substring(1);
+
+                int.TryParse(yearStr, out year);
+                Year = year;
+            }
+            int month = 0;
+            int.TryParse(monthStr, out month);
+            Month = month;
 
             string tag = Request.QueryString["tag"];
             BindEntries(tag);
@@ -110,6 +149,23 @@ namespace Sitecore.Modules.WeBlog.Layouts
                 if(ancViewMore != null)
                     ancViewMore.Visible = false;
             }
+
+            if (Year != 0)
+            {
+                if (Month != 0)
+                {
+                    entries = from e in entries
+                              where e.EntryDate.DateTime.Year == Year && e.EntryDate.DateTime.Month == Month
+                              select e; 
+                }
+                else
+                {
+                    entries = from e in entries
+                              where e.EntryDate.DateTime.Year == Year
+                              select e;
+                }
+            }
+
             entries = entries.Skip(StartIndex).Take(TotalToShow);
 
             if (EntryList != null)
